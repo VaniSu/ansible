@@ -14,12 +14,6 @@ resource "aws_key_pair" "generated_key" {
   public_key = tls_private_key.example.public_key_openssh
 }
  
-# Save private key locally
-resource "local_file" "private_key" {
-  filename = "./web-server-key.pem"
-  content  = tls_private_key.example.private_key_pem
-  file_permission = "0400"
-}
  
 # Create a Security Group
 resource "aws_security_group" "web_sg" {
@@ -70,10 +64,8 @@ output "instance_public_ip" {
   value = aws_instance.web_server.public_ip
 }
  
-output "private_key_path" {
-  value = local_file.private_key.filename
+output "private_key" {
+  value     = tls_private_key.example.private_key_pem
+  sensitive = true
 }
- 
-output "key_pair_name" {
-  value = aws_key_pair.generated_key.key_name
-}
+
