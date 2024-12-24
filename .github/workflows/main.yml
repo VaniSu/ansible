@@ -29,7 +29,6 @@ jobs:
         
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'  # Only apply for pushes to 'main'
         run: terraform apply -auto-approve
 
       - name: Save private key to file
