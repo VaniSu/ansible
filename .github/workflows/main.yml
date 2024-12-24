@@ -35,7 +35,7 @@ jobs:
 
       - name: Save private key to file
         run: |
-          echo "$(terraform output -raw private_key)" > private-key.pem
+          echo "${{ steps.terraform.outputs.private_key }}" > private-key.pem
           chmod 600 private-key.pem
 
       - name: Set up Ansible
@@ -44,12 +44,12 @@ jobs:
       - name: Install SSH key for Ansible
         run: |
           mkdir -p ~/.ssh
-          echo "$(terraform output -raw private_key)" > ~/.ssh/id_rsa
+          echo "${{ steps.terraform.outputs.private_key }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "$(terraform output -raw instance_public_ip)"
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i "$(terraform output -raw instance_public_ip)," setup_web_server.yml
+          ansible-playbook -i "${{ steps.terraform.outputs.instance_ip }}," setup_web_server.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
