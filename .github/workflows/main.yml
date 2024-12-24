@@ -54,7 +54,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ steps.terraform.outputs.private_key }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-         
+          echo "${{ steps.terraform.outputs.instance_public_ip }}"
 
       - name: Run Ansible Playbook
         run: |
