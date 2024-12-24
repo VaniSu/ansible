@@ -54,17 +54,10 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ steps.terraform.outputs.private_key }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+         
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i "${{ steps.terraform.outputs.instance_ip }}," setup_web_server.yml
+          ansible-playbook -i "${{ steps.terraform.outputs.instance_public_ip }}," setup_web_server.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
-    
-  destroy:
-    runs-on: ubuntu-latest    
-
-    steps:
-      - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch'  # Run only on manual trigger
-        run: terraform destroy -auto-approve
