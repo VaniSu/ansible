@@ -1,10 +1,10 @@
-name: Terraform Automation with Destroy
+name: Terraform integration with Ansible
  
 on:
   workflow_dispatch: 
 
 jobs:
-  OIDC:
+  terraform:
     runs-on: ubuntu-latest
  
     steps:
