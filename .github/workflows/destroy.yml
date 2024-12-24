@@ -34,11 +34,7 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
         
- 
-      # Step 5: Terraform Apply
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'  # Only apply for pushes to 'main'
-        run: terraform apply -auto-approve
+
         
       # Step 6: Terraform Destroy (Manual Trigger)
       - name: Terraform Destroy
