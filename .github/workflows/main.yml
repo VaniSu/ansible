@@ -31,12 +31,18 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve
 
+      - name: Extract Terraform Outputs
+        id: terraform_outputs
+        run: |
+          echo "INSTANCE_PUBLIC_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+          echo "PRIVATE_KEY=$(terraform output -raw private_key)" >> $GITHUB_ENV
+
+          echo ""${{ env.INSTANCE_PUBLIC_IP }}""
+
       - name: Save private key to file
         run: |
-          echo "${{ steps.terraform.outputs.private_key }}" > private-key.pem
+          echo ""${{ env.PRIVATE_KEY }}"" > private-key.pem
           chmod 600 private-key.pem
-        env:
-          PRIVATE_KEY: ${{ steps.terraform.outputs.private_key }}
 
   ansible:
     runs-on: ubuntu-latest
@@ -52,12 +58,12 @@ jobs:
       - name: Install SSH key for Ansible
         run: |
           mkdir -p ~/.ssh
-          echo "${{ steps.terraform.outputs.private_key }}" > ~/.ssh/id_rsa
+          echo "${{ env.PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "${{ steps.terraform.outputs.instance_public_ip }}"
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i "${{ steps.terraform.outputs.instance_public_ip }}," setup_web_server.yml
+          ansible-playbook -i "${{ env.INSTANCE_PUBLIC_IP }}," setup_web_server.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
