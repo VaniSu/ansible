@@ -66,6 +66,7 @@ security_groups = [aws_security_group.web_sg.name]
   tags = {
     Name = "web-server"
   }
+}
  
 
  
