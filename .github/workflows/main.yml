@@ -1,0 +1,71 @@
+name: Terraform Automation with Destroy
+ 
+on:
+  workflow_dispatch: 
+
+jobs:
+  OIDC:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2.0.3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
+        
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'  # Only apply for pushes to 'main'
+        run: terraform apply -auto-approve
+
+      - name: Save private key to file
+        run: |
+          echo "${{ steps.terraform.outputs.private_key }}" > private-key.pem
+          chmod 600 private-key.pem
+        env:
+          PRIVATE_KEY: ${{ steps.terraform.outputs.private_key }}
+
+  ansible:
+    runs-on: ubuntu-latest
+    needs: terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ansible
+        run: sudo apt-get install -y ansible
+
+      - name: Install SSH key for Ansible
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ steps.terraform.outputs.private_key }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i "${{ steps.terraform.outputs.instance_ip }}," setup_web_server.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+    
+  destroy:
+    runs-on: ubuntu-latest    
+
+    steps:
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch'  # Run only on manual trigger
+        run: terraform destroy -auto-approve
